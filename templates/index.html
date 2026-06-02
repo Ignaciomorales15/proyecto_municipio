@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Licencias de Conducir - Municipio de Morón</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet" type="text/css" href="style.css" />
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Header Móvil (Solo visible en responsive) -->
+        <header class="mobile-header">
+            <div class="logo" onclick="showSection('home')">
+                <img src="https://tse1.mm.bing.net/th/id/OIP.7AVAoiPSfEDCO_f1HqMwqwHaHa?rs=1&pid=ImgDetMain&o=7&rm=3"
+                    alt="Logo Morón" class="logo-img">
+                <span class="logo-text">Morón</span>
+            </div>
+            <button class="menu-toggle" id="mobile-menu-open" aria-label="Abrir menú">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </header>
+
+        <!-- Sidebar lateral -->
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo" onclick="showSection('home')" style="cursor: pointer;">
+                    <img src="https://tse1.mm.bing.net/th/id/OIP.7AVAoiPSfEDCO_f1HqMwqwHaHa?rs=1&pid=ImgDetMain&o=7&rm=3"
+                        alt="Logo Morón" class="logo-img">
+                    <span class="logo-text">Morón</span>
+                </div>
+                <button class="menu-toggle" id="menu-toggle" aria-label="Abrir menú">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#" class="active" onclick="showSection('home')"><i class="fas fa-home"></i> Inicio</a></li>
+                <li><a href="#" onclick="showSection('turnos')"><i class="fas fa-calendar-plus"></i> Sacar Turno</a>
+                </li>
+                <li><a href="#" onclick="showSection('consultar')"><i class="fas fa-search"></i> Consultar/Cancelar</a>
+                </li>
+                <li><a href="#" onclick="showSection('infracciones')"><i class="fas fa-file-invoice-dollar"></i>
+                        Infracciones</a></li>
+                <li><a href="#" onclick="showSection('Galeria')"><i class="fas fa-file-invoice-dollar"></i> Galeria</a>
+                </li>
+                <li><a href="#" onclick="showSection('educacion')"><i class="fas fa-book-open"></i> Educación Vial</a>
+                </li>
+                <li class="nav-dropdown">
+                    <a href="#" class="nav-dropdown-toggle" onclick="toggleAyudaMenu(event)">
+                        <i class="fas fa-question-circle"></i> Ayuda
+                        <i class="fas fa-chevron-down nav-arrow"></i>
+                    </a>
+                    <ul class="nav-submenu" id="ayuda-submenu">
+                        <li><a href="#" onclick="showFaq('faq-documentos')"><i class="fas fa-file-alt"></i> Documentos necesarios</a></li>
+                        <li><a href="#" onclick="showFaq('faq-cancelar')"><i class="fas fa-calendar-times"></i> Cancelar/Reprogramar</a></li>
+                        <li><a href="#" onclick="showFaq('faq-pago')"><i class="fas fa-credit-card"></i> Medios de pago</a></li>
+                        <li><a href="#" onclick="showFaq('faq-tarde')"><i class="fas fa-clock"></i> Llegada tarde</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Contenido principal -->
+        <main class="content">
+            <!-- Barra Superior de Usuario -->
+            <div class="user-header">
+                <div class="user-greeting" id="user-greeting">
+                    <a href="#" onclick="showSection('auth')">Ingresá</a> |
+                    <a href="#" onclick="showAuthMode('register')">Creá tu cuenta</a>
+                </div>
+            </div>
+
+            <!-- Sección Inicio -->
+            <section id="home" class="section active">
+                <h1>Sistema de Gestión de Licencias</h1>
+                <p class="subtitle">Bienvenido al portal renovado de la Municipalidad de Morón.</p>
+                <div class="cards-grid">
+                    <div class="card clickable" onclick="showSection('turnos')">
+                        <h3>Sacar Turno</h3>
+                        <p>Reserva tu lugar para el trámite de licencia original o renovación.</p>
+                    </div>
+                    <div class="card clickable" onclick="showSection('educacion')">
+                        <h3>Educación Vial</h3>
+                        <p>Material de estudio y cursos obligatorios online.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección Turnos -->
+            <section id="turnos" class="section">
+                <h1>Reserva de Turnos</h1>
+                <div class="calendar-container">
+                    <div class="date-picker">
+                        <label for="fecha-turno">Selecciona una fecha:</label>
+                        <input type="date" id="fecha-turno" min="">
+                    </div>
+                    <div id="slots-container" class="slots-grid">
+                        <!-- Los horarios se cargarán dinámicamente -->
+                        <p class="info-text">Selecciona una fecha para ver horarios disponibles.</p>
+                    </div>
+                </div>
+
+                <!-- Modal de reserva (oculto por defecto) -->
+                <div id="reserva-modal" class="modal">
+                    <div class="modal-content">
+                        <h3>Confirmar Turno</h3>
+                        <p id="info-reserva-p"></p>
+                        <input type="text" id="nombre-input" placeholder="Nombre completo">
+                        <input type="text" id="dni-input" placeholder="DNI (sin puntos)">
+                        <div class="modal-buttons">
+                            <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+                            <button class="btn btn-primary" onclick="confirmarReserva()">Confirmar</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección Consultar/Cancelar -->
+            <section id="consultar" class="section">
+                <h1>Consulta de Turnos</h1>
+                <div class="consultar-box">
+                    <input type="text" id="consulta-dni" placeholder="Ingresa tu DNI">
+                    <button class="btn btn-primary" onclick="buscarTurnos()">Consultar</button>
+                </div>
+                <div id="resultados-consulta" class="resultados-grid"></div>
+            </section>
+
+            <!-- Sección Infracciones -->
+            <section id="infracciones" class="section">
+                <h1>Consulta de Infracciones</h1>
+                <div class="links-list">
+                    <a href="https://apps.moron.gob.ar/Jdf_infracciones/" target="_blank"
+                        class="external-link">Infracciones de la Municipalidad de Morón</a>
+                    <a href="https://infraccionesba.gba.gob.ar/" target="_blank" class="external-link">Infracciones de
+                        la Provincia de Buenos Aires</a>
+                    <a href="https://consultainfracciones.seguridadvial.gob.ar/" target="_blank"
+                        class="external-link">Infracciones en el resto del país</a>
+                    <a href="https://buenosaires.gob.ar/licenciasdeconducir/consulta-de-infracciones/?actas=transito"
+                        target="_blank" class="external-link">Infracciones de CABA</a>
+                </div>
+            </section>
+
+            <!-- Sección Galería -->
+            <section id="Galeria" class="section">
+                <h1>Galería</h1>
+                <p class="subtitle">Imágenes de manejo</p>
+                <div class="gallery-grid">
+                    <div class="gallery-item">
+                        <img src="https://tse2.mm.bing.net/th/id/OIP.xG5qpMUEjclv6dkj-sY00AHaEK?rs=1&pid=ImgDetMain&o=7&rm=3"
+                            alt="Municipalidad de Morón">
+                        <div class="gallery-overlay">
+                            <span>Municipalidad de Morón</span>
+                        </div>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="https://tse1.mm.bing.net/th/id/OIP.PTYFs7IX829AWVrFhBbEtwHaEk?rs=1&pid=ImgDetMain&o=7&rm=3"
+                            alt="Conos">
+                        <div class="gallery-overlay">
+                            <span>Conos</span>
+                        </div>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="https://th.bing.com/th/id/OIP.ZEHzPZ_qZ1odVu-I0exlZwHaE8?o=7rm=3&rs=1&pid=ImgDetMain&o=7&rm=3"
+                            alt="Auto conos">
+                        <div class="gallery-overlay">
+                            <span>Auto conos</span>
+                        </div>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="https://tse1.mm.bing.net/th/id/OIP.KI2mbG6rAQH62BjuUeiSPQHaE8?rs=1&pid=ImgDetMain&o=7&rm=3"
+                            alt="Lección">
+                        <div class="gallery-overlay">
+                            <span>Lección</span>
+                        </div>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="https://fulltimemotos.com.ar/wp-content/uploads/que-tengo-que-llevar-para-la-prueba-practica-de-manejo-moto.webp"
+                            alt="Moto">
+                        <div class="gallery-overlay">
+                            <span>Moto</span>
+                        </div>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="https://tse3.mm.bing.net/th/id/OIP.hJpRYl8yW1Cyw3STaZGzsAHaEk?rs=1&pid=ImgDetMain&o=7&rm=3"
+                            alt="Moto_conos">
+                        <div class="gallery-overlay">
+                            <span>Moto conos</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección Educación Vial -->
+            <section id="educacion" class="section">
+                <h1>Educación Vial</h1>
+                <div class="info-card">
+                    <h3>Curso Obligatorio para Principiantes</h3>
+                    <p>Si sacas la licencia por primera vez o ampliás a Moto/Auto:</p>
+                    <ul>
+                        <li><a href="https://curso.seguridadvial.gob.ar/ansv/" target="_blank">Realizar Curso Online</a>
+                        </li>
+                        <li>Descargá el comprobante y traelo el día del turno.</li>
+                    </ul>
+                </div>
+                <div class="info-card">
+                    <h3>Material de Estudio</h3>
+                    <p>Descargá el <a href="#">Manual del Conductor</a> para repasar antes del examen.</p>
+                </div>
+                <div class="contact-box">
+                    <p>Consultas: <strong>educacionvialmoron@gmail.com</strong></p>
+                </div>
+            </section>
+
+            <!-- Sección Ayuda -->
+            <section id="ayuda" class="section">
+                <div class="help-header">
+                    <h1>Centro de Ayuda</h1>
+                    <p class="subtitle">Todo lo que necesitas saber sobre tu trámite en un solo lugar.</p>
+                </div>
+
+                <div class="faq-container">
+                    <details class="faq-item" id="faq-documentos">
+                        <summary>¿Qué documentos debo llevar el día del turno?</summary>
+                        <div class="faq-answer">
+                            <p>Para trámites de licencia original o renovación, debés presentar:</p>
+                            <ul>
+                                <li>DNI original y fotocopia (con domicilio en Morón).</li>
+                                <li>Comprobante de pago de tasas (CENAT y Tasa Municipal).</li>
+                                <li>Licencia anterior (si es renovación).</li>
+                                <li>Certificado de curso de seguridad vial (si es la primera vez).</li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <details class="faq-item" id="faq-cancelar">
+                        <summary>¿Cómo puedo cancelar o reprogramar mi turno?</summary>
+                        <div class="faq-answer">
+                            <p>Podés gestionarlo desde la sección <strong>"Consultar/Cancelar"</strong> ingresando tu
+                                DNI. Allí verás tus turnos activos y la opción para darlos de baja.</p>
+                        </div>
+                    </details>
+
+                    <details class="faq-item" id="faq-pago">
+                        <summary>¿Cuáles son los medios de pago aceptados?</summary>
+                        <div class="faq-answer">
+                            <p>Podés abonar las tasas a través de Bapro Pagos, Rapipago, Pago Fácil o mediante medios
+                                electrónicos como Red Link o Banelco.</p>
+                        </div>
+                    </details>
+
+                    <details class="faq-item" id="faq-tarde">
+                        <summary>¿Qué sucede si llego tarde a mi turno?</summary>
+                        <div class="faq-answer">
+                            <p>Se recomienda llegar 15 minutos antes. Pasados los 10 minutos de la hora citada, el turno
+                                podría ser dado de baja para no retrasar el resto del cronograma.</p>
+                        </div>
+                    </details>
+                </div>
+
+                <div class="support-footer">
+                    <p>¿No encontraste lo que buscabas?</p>
+                    <a href="mailto:licencias@moron.gob.ar" class="btn btn-secondary">Contactar Soporte</a>
+                </div>
+            </section>
+
+            <!-- Sección Autenticación -->
+            <section id="auth" class="section">
+                <div class="auth-wrapper">
+                    <!-- Formulario de Login -->
+                    <div id="login-container" class="auth-box">
+                        <h2>¡Hola! Para seguir, ingresá tu e-mail</h2>
+                        <form id="login-form" onsubmit="handleLogin(event)">
+                            <div class="form-group">
+                                <label>E-mail</label>
+                                <input type="email" id="login-mail" required placeholder="tuemail@ejemplo.com">
+                            </div>
+                            <div class="form-group">
+                                <label>Contraseña</label>
+                                <input type="password" id="login-password" required placeholder="••••••••">
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block">Continuar</button>
+                        </form>
+                        <p class="auth-switch">¿Nuevo aquí? <a href="#" onclick="showAuthMode('register')">Crear
+                                cuenta</a></p>
+                    </div>
+
+                    <!-- Formulario de Registro -->
+                    <div id="register-container" class="auth-box" style="display: none;">
+                        <h2>Completá tus datos</h2>
+                        <form id="register-form" onsubmit="handleRegister(event)">
+                            <div class="form-group">
+                                <label>Nombre</label>
+                                <input type="text" id="reg-nombre" required placeholder="Ej: Juan">
+                            </div>
+                            <div class="form-group">
+                                <label>Apellido</label>
+                                <input type="text" id="reg-apellido" required placeholder="Ej: Pérez">
+                            </div>
+                            <div class="form-group">
+                                <label>DNI</label>
+                                <input type="text" id="reg-dni" required placeholder="Sin puntos ni espacios">
+                            </div>
+                            <div class="form-group">
+                                <label>E-mail</label>
+                                <input type="email" id="reg-mail" required placeholder="tuemail@ejemplo.com">
+                            </div>
+                            <div class="form-group">
+                                <label>Contraseña</label>
+                                <input type="password" id="reg-password" required placeholder="Crea una contraseña">
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block">Crear cuenta</button>
+                        </form>
+                        <p class="auth-switch">¿Ya tenés cuenta? <a href="#" onclick="showAuthMode('login')">Iniciá
+                                sesión</a></p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+
+</html>

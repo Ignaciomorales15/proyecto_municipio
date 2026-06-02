@@ -1,0 +1,58 @@
+========================================================================
+DOCUMENTACIÓN DEL PROYECTO: SISTEMA DE LICENCIAS - MUNICIPIO DE MORÓN
+========================================================================
+
+1. DESCRIPCIÓN GENERAL
+----------------------
+Este proyecto consiste en una plataforma web renovada para la gestión de turnos
+y consultas relacionadas con las Licencias de Conducir de la Municipalidad de Morón.
+El objetivo es ofrecer una interfaz moderna, premium y totalmente responsive
+para mejorar la experiencia del ciudadano.
+
+2. STACK TECNOLÓGICO
+--------------------
+- Backend: Python con Flask.
+- Frontend: HTML5, CSS3 (Vanilla), JavaScript (Vanilla).
+- Tipografía: Inter (Google Fonts).
+
+3. ESTRUCTURA DEL PROYECTO
+--------------------------
+/mejora_municipio_moron
+├── app.py                # Servidor Flask y lógica de la API
+├── templates/
+│   └── index.html        # Estructura principal de la web
+└── static/
+    ├── css/
+    │   └── style.css     # Estilos, Media Queries y Diseño Premium
+    └── js/
+        └── main.js       # Lógica del frontend y navegación
+
+4. SECCIONES DEL SISTEMA
+------------------------
+- Inicio: Bienvenida y accesos rápidos.
+- Sacar Turno: Selector de fecha y horarios disponibles (API dinámico).
+- Consultar/Cancelar: Búsqueda de turnos por DNI y gestión de cancelaciones.
+- Infracciones: Enlaces directos a organismos de tránsito.
+- Educación Vial: Material de estudio y cursos obligatorios.
+- Centro de Ayuda: FAQ interactiva con diseño de acordeón premium.
+
+5. MEJORAS RECIENTES (LOGS DE CAMBIOS)
+--------------------------------------
+- DISEÑO RESPONSIVO: Implementación de Media Queries para tablets y móviles.
+- MENÚ HAMBURGUESA: Navegación móvil optimizada con toggle animado.
+- IDENTIDAD VISUAL: Integración del logo oficial y fondo temático de Morón.
+- UX PREMIUM: Transiciones suaves, hover effects y rediseño total de la sección de Ayuda.
+- REFACTORIZACIÓN CSS: Limpieza de código y corrección de errores de sintaxis.
+
+6. CÓMO EJECUTAR EL PROYECTO
+----------------------------
+1. Asegurarse de tener Python instalado.
+2. Instalar Flask si no está presente: `pip install flask`
+3. Ejecutar el servidor: `python app.py`
+4. Acceder en el navegador a: `http://localhost:5000`
+
+7. CONTACTO Y SOPORTE
+---------------------
+- Email: licencias@moron.gob.ar
+- Consultas Educación Vial: educacionvialmoron@gmail.com
+
