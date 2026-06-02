@@ -5,13 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Licencias de Conducir - Municipio de Morón</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="../static/css/style.css">
     <!-- Google Fonts: Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <link rel="stylesheet" type="text/css" href="style.css" />
 </head>
 
 <body>
@@ -62,10 +60,14 @@
                         <i class="fas fa-chevron-down nav-arrow"></i>
                     </a>
                     <ul class="nav-submenu" id="ayuda-submenu">
-                        <li><a href="#" onclick="showFaq('faq-documentos')"><i class="fas fa-file-alt"></i> Documentos necesarios</a></li>
-                        <li><a href="#" onclick="showFaq('faq-cancelar')"><i class="fas fa-calendar-times"></i> Cancelar/Reprogramar</a></li>
-                        <li><a href="#" onclick="showFaq('faq-pago')"><i class="fas fa-credit-card"></i> Medios de pago</a></li>
-                        <li><a href="#" onclick="showFaq('faq-tarde')"><i class="fas fa-clock"></i> Llegada tarde</a></li>
+                        <li><a href="#" onclick="showFaq('faq-documentos')"><i class="fas fa-file-alt"></i> Documentos
+                                necesarios</a></li>
+                        <li><a href="#" onclick="showFaq('faq-cancelar')"><i class="fas fa-calendar-times"></i>
+                                Cancelar/Reprogramar</a></li>
+                        <li><a href="#" onclick="showFaq('faq-pago')"><i class="fas fa-credit-card"></i> Medios de
+                                pago</a></li>
+                        <li><a href="#" onclick="showFaq('faq-tarde')"><i class="fas fa-clock"></i> Llegada tarde</a>
+                        </li>
                     </ul>
                 </li>
             </ul>
@@ -332,7 +334,7 @@
     <!-- Toast Container -->
     <div id="toast-container" class="toast-container"></div>
 
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="../static/js/main.js"></script>
 </body>
 
 </html>

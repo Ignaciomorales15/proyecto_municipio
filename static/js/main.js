@@ -2,9 +2,35 @@
 let selectedDate = '';
 let selectedSlot = '';
 
-// Al cargar el documento
+// Horarios disponibles por defecto (simulados)
+const HORARIOS_DISPONIBLES = [
+    '08:00', '08:30', '09:00', '09:30', '10:00', '10:30',
+    '11:00', '11:30', '12:00', '12:30', '13:00', '13:30',
+    '14:00', '14:30', '15:00', '15:30', '16:00', '16:30'
+];
+
+// ─── Utilidades de localStorage ───────────────────────────────────────────────
+
+function getUsers() {
+    return JSON.parse(localStorage.getItem('usuarios') || '[]');
+}
+
+function saveUsers(users) {
+    localStorage.setItem('usuarios', JSON.stringify(users));
+}
+
+function getTurnos() {
+    return JSON.parse(localStorage.getItem('turnos') || '[]');
+}
+
+function saveTurnos(turnos) {
+    localStorage.setItem('turnos', JSON.stringify(turnos));
+}
+
+// ─── Al cargar el documento ───────────────────────────────────────────────────
+
 document.addEventListener('DOMContentLoaded', () => {
-    // Establecer fecha minima en el input
+    // Establecer fecha mínima en el input (hoy)
     const dateInput = document.getElementById('fecha-turno');
     if (dateInput) {
         const today = new Date().toISOString().split('T')[0];
@@ -34,9 +60,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Cerrar menú al hacer clic fuera (en móvil)
     document.addEventListener('click', (e) => {
-        if (window.innerWidth <= 768 && 
-            !sidebar.contains(e.target) && 
-            !menuOpen.contains(e.target) && 
+        if (window.innerWidth <= 768 &&
+            !sidebar.contains(e.target) &&
+            !menuOpen.contains(e.target) &&
             sidebar.classList.contains('open')) {
             sidebar.classList.remove('open');
         }
@@ -45,6 +71,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Inicializar UI de usuario si está logueado
     updateAuthUI();
 });
+
+// ─── Auth UI ──────────────────────────────────────────────────────────────────
 
 /**
  * Actualiza la UI superior dependiendo de si hay un usuario logueado o no
@@ -86,6 +114,8 @@ function showAuthMode(mode) {
     }
 }
 
+// ─── Toasts ───────────────────────────────────────────────────────────────────
+
 /**
  * Muestra una notificación Toast
  */
@@ -95,8 +125,7 @@ function showToast(message, type = 'info') {
 
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
-    
-    // Asignar icono según tipo
+
     let icon = 'fa-info-circle';
     if (type === 'success') icon = 'fa-check-circle';
     if (type === 'error') icon = 'fa-exclamation-circle';
@@ -104,8 +133,7 @@ function showToast(message, type = 'info') {
     toast.innerHTML = `<i class="fas ${icon}"></i> <span>${message}</span>`;
     container.appendChild(toast);
 
-    // Trigger reflow
-    void toast.offsetWidth;
+    void toast.offsetWidth; // Trigger reflow
     toast.classList.add('show');
 
     setTimeout(() => {
@@ -114,136 +142,135 @@ function showToast(message, type = 'info') {
     }, 3000);
 }
 
+// ─── Navegación ───────────────────────────────────────────────────────────────
+
 /**
  * Cambia la sección visible en la UI.
  */
 function showSection(sectionId) {
-    // Ocultar todas las secciones
     document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-    // Desactivar links
     document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
-    
-    // Mostrar la seleccionada
-    document.getElementById(sectionId).classList.add('active');
-    
-    // Activar el link correspondiente
+
+    const target = document.getElementById(sectionId);
+    if (target) target.classList.add('active');
+
     const activeLink = Array.from(document.querySelectorAll('.nav-links a'))
-                            .find(a => a.getAttribute('onclick').includes(sectionId));
+        .find(a => a.getAttribute('onclick') && a.getAttribute('onclick').includes(sectionId));
     if (activeLink) activeLink.classList.add('active');
 
-    // Recargar horarios si volvemos a la vista de reserva
-    if (sectionId === 'home' && selectedDate) {
+    if (sectionId === 'turnos' && selectedDate) {
         cargarHorarios(selectedDate);
     }
 
-    // Cerrar sidebar en móvil después de navegar
     if (window.innerWidth <= 768) {
         document.getElementById('sidebar').classList.remove('open');
     }
 }
 
+// ─── Login / Registro (localStorage) ─────────────────────────────────────────
+
 /**
- * Maneja el inicio de sesión
+ * Maneja el inicio de sesión (sin backend)
  */
-async function handleLogin(e) {
+function handleLogin(e) {
     e.preventDefault();
-    const mail = document.getElementById('login-mail').value;
+    const mail = document.getElementById('login-mail').value.trim();
     const password = document.getElementById('login-password').value;
 
-    try {
-        const res = await fetch('/api/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ mail, password })
-        });
-        const data = await res.json();
-        
-        if (data.success) {
-            localStorage.setItem('user', JSON.stringify(data.user));
-            showToast("¡Inicio de sesión exitoso!", "success");
-            updateAuthUI();
-            showSection('home');
-        } else {
-            showToast(data.message, "error");
-        }
-    } catch (err) {
-        showToast("Error de conexión", "error");
+    const users = getUsers();
+    const user = users.find(u => u.mail === mail && u.password === password);
+
+    if (user) {
+        // Guardar sin la contraseña en la sesión activa
+        const { password: _, ...safeUser } = user;
+        localStorage.setItem('user', JSON.stringify(safeUser));
+        showToast("¡Inicio de sesión exitoso!", "success");
+        updateAuthUI();
+        showSection('home');
+    } else {
+        showToast("Email o contraseña incorrectos.", "error");
     }
 }
 
 /**
- * Maneja el registro
+ * Maneja el registro (sin backend)
  */
-async function handleRegister(e) {
+function handleRegister(e) {
     e.preventDefault();
-    const nombre = document.getElementById('reg-nombre').value;
-    const apellido = document.getElementById('reg-apellido').value;
-    const dni = document.getElementById('reg-dni').value;
-    const mail = document.getElementById('reg-mail').value;
+    const nombre = document.getElementById('reg-nombre').value.trim();
+    const apellido = document.getElementById('reg-apellido').value.trim();
+    const dni = document.getElementById('reg-dni').value.trim();
+    const mail = document.getElementById('reg-mail').value.trim();
     const password = document.getElementById('reg-password').value;
 
-    try {
-        const res = await fetch('/api/register', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ nombre, apellido, dni, mail, password })
-        });
-        const data = await res.json();
-        
-        if (data.success) {
-            localStorage.setItem('user', JSON.stringify(data.user));
-            showToast("¡Cuenta creada exitosamente!", "success");
-            updateAuthUI();
-            showSection('home');
-        } else {
-            showToast(data.message, "error");
-        }
-    } catch (err) {
-        showToast("Error de conexión", "error");
+    const users = getUsers();
+
+    // Verificar si el email ya existe
+    if (users.find(u => u.mail === mail)) {
+        showToast("Ya existe una cuenta con ese email.", "error");
+        return;
     }
+
+    // Verificar si el DNI ya existe
+    if (users.find(u => u.dni === dni)) {
+        showToast("Ya existe una cuenta con ese DNI.", "error");
+        return;
+    }
+
+    const newUser = { nombre, apellido, dni, mail, password };
+    users.push(newUser);
+    saveUsers(users);
+
+    // Iniciar sesión automáticamente (sin contraseña en sesión)
+    const { password: _, ...safeUser } = newUser;
+    localStorage.setItem('user', JSON.stringify(safeUser));
+    showToast("¡Cuenta creada exitosamente!", "success");
+    updateAuthUI();
+    showSection('home');
 }
 
+// ─── Turnos ───────────────────────────────────────────────────────────────────
+
 /**
- * Llama al backend para obtener horarios ocupados y disponibles.
+ * Carga los horarios disponibles para una fecha dada (sin backend).
  */
-async function cargarHorarios(fecha) {
+function cargarHorarios(fecha) {
     const container = document.getElementById('slots-container');
     container.innerHTML = '<p class="info-text">Cargando horarios...</p>';
 
-    try {
-        const response = await fetch(`/api/horarios?fecha=${fecha}`);
-        const data = await response.json();
-        
-        container.innerHTML = ''; // Limpiar
+    // Simular un pequeño delay para mejor UX
+    setTimeout(() => {
+        const turnos = getTurnos();
+        const ocupados = turnos
+            .filter(t => t.fecha === fecha)
+            .map(t => t.hora);
 
-        if (data.todos.length === 0) {
+        container.innerHTML = '';
+
+        if (HORARIOS_DISPONIBLES.length === 0) {
             container.innerHTML = '<p class="info-text">No hay horarios disponibles para esta fecha.</p>';
             return;
         }
 
-        data.todos.forEach(hora => {
-            const isOccupied = data.ocupados.includes(hora);
+        HORARIOS_DISPONIBLES.forEach(hora => {
+            const isOccupied = ocupados.includes(hora);
             const slotDiv = document.createElement('div');
             slotDiv.className = `slot ${isOccupied ? 'occupied' : ''}`;
             slotDiv.innerText = hora;
-            
+
             if (!isOccupied) {
                 slotDiv.onclick = () => openModal(hora);
             }
-            
+
             container.appendChild(slotDiv);
         });
-    } catch (error) {
-        console.error('Error al cargar horarios:', error);
-        container.innerHTML = '<p class="info-text">Error al cargar datos. Asegúrate de que el servidor esté corriendo.</p>';
-    }
+    }, 200);
 }
 
 /**
  * Abre el modal para ingresar datos de reserva.
  */
 function openModal(hora) {
-    // Verificar si hay sesión iniciada antes de continuar
     const userStr = localStorage.getItem('user');
     if (!userStr) {
         showToast("Debes iniciar sesión para sacar un turno.", "error");
@@ -253,19 +280,15 @@ function openModal(hora) {
 
     selectedSlot = hora;
     document.getElementById('info-reserva-p').innerText = `Vas a reservar el día ${selectedDate} a las ${hora} hs.`;
-    
-    // Autocompletar y bloquear edicion
+
     const user = JSON.parse(userStr);
     const nombreInput = document.getElementById('nombre-input');
     const dniInput = document.getElementById('dni-input');
-    
+
     nombreInput.value = user.nombre + ' ' + user.apellido;
     dniInput.value = user.dni;
-    
     nombreInput.readOnly = true;
     dniInput.readOnly = true;
-    
-    // Cambiar estilo para que parezca de solo lectura
     nombreInput.style.backgroundColor = '#f5f5f5';
     dniInput.style.backgroundColor = '#f5f5f5';
 
@@ -279,9 +302,9 @@ function closeModal() {
 }
 
 /**
- * Envía la reserva al backend.
+ * Confirma y guarda la reserva en localStorage.
  */
-async function confirmarReserva() {
+function confirmarReserva() {
     const nombre = document.getElementById('nombre-input').value;
     const dni = document.getElementById('dni-input').value;
 
@@ -290,99 +313,90 @@ async function confirmarReserva() {
         return;
     }
 
-    try {
-        const response = await fetch('/api/reservar', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                fecha: selectedDate,
-                hora: selectedSlot,
-                nombre: nombre,
-                dni: dni
-            })
-        });
+    const turnos = getTurnos();
 
-        const result = await response.json();
-        if (result.success) {
-            showToast("¡Turno reservado con éxito!", "success");
-            closeModal();
-            cargarHorarios(selectedDate); // Recargar grilla
-        } else {
-            showToast("Error: " + result.message, "error");
-        }
-    } catch (error) {
-        showToast("Hubo un problema con la reserva.", "error");
+    // Verificar si ya existe ese horario reservado
+    const yaReservado = turnos.find(t => t.fecha === selectedDate && t.hora === selectedSlot);
+    if (yaReservado) {
+        showToast("Ese horario ya fue reservado.", "error");
+        closeModal();
+        cargarHorarios(selectedDate);
+        return;
     }
+
+    // Verificar si el DNI ya tiene turno ese día
+    const turnoDelDia = turnos.find(t => t.fecha === selectedDate && t.dni === dni);
+    if (turnoDelDia) {
+        showToast("Ya tenés un turno para ese día.", "error");
+        return;
+    }
+
+    turnos.push({ fecha: selectedDate, hora: selectedSlot, nombre, dni });
+    saveTurnos(turnos);
+
+    showToast("¡Turno reservado con éxito!", "success");
+    closeModal();
+    cargarHorarios(selectedDate);
 }
 
 /**
- * Consulta turnos por DNI.
+ * Consulta turnos por DNI (desde localStorage).
  */
-async function buscarTurnos() {
-    const dni = document.getElementById('consulta-dni').value;
+function buscarTurnos() {
+    const dni = document.getElementById('consulta-dni').value.trim();
     const container = document.getElementById('resultados-consulta');
-    
+
     if (!dni) {
         showToast("Ingresa un DNI.", "error");
         return;
     }
 
-    try {
-        const response = await fetch(`/api/consultar?dni=${dni}`);
-        const data = await response.json();
-        
-        container.innerHTML = '';
+    const turnos = getTurnos();
+    const resultados = turnos.filter(t => t.dni === dni);
 
-        if (data.length === 0) {
-            container.innerHTML = '<p>No se encontraron turnos para este DNI.</p>';
-            return;
-        }
+    container.innerHTML = '';
 
-        data.forEach(t => {
-            const card = document.createElement('div');
-            card.className = 'turno-result-card';
-            card.innerHTML = `
-                <div>
-                    <strong>${t.fecha}</strong> - ${t.hora} hs
-                </div>
-                <button class="btn btn-secondary" onclick="cancelarTurno('${t.fecha}', '${t.hora}', '${dni}')">Cancelar</button>
-            `;
-            container.appendChild(card);
-        });
-    } catch (error) {
-        showToast("Error al consultar.", "error");
+    if (resultados.length === 0) {
+        container.innerHTML = '<p>No se encontraron turnos para este DNI.</p>';
+        return;
     }
+
+    resultados.forEach(t => {
+        const card = document.createElement('div');
+        card.className = 'turno-result-card';
+        card.innerHTML = `
+            <div>
+                <strong>${t.fecha}</strong> - ${t.hora} hs &nbsp;|&nbsp; ${t.nombre}
+            </div>
+            <button class="btn btn-secondary" onclick="cancelarTurno('${t.fecha}', '${t.hora}', '${dni}')">Cancelar</button>
+        `;
+        container.appendChild(card);
+    });
 }
 
 /**
- * Cancela un turno.
+ * Cancela un turno (en localStorage).
  */
-async function cancelarTurno(fecha, hora, dni) {
+function cancelarTurno(fecha, hora, dni) {
     if (!confirm(`¿Estás seguro de cancelar el turno del ${fecha} a las ${hora}?`)) return;
 
-    try {
-        const response = await fetch('/api/cancelar', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ fecha, hora, dni })
-        });
+    let turnos = getTurnos();
+    const antes = turnos.length;
+    turnos = turnos.filter(t => !(t.fecha === fecha && t.hora === hora && t.dni === dni));
 
-        const result = await response.json();
-        if (result.success) {
-            showToast("Turno cancelado con éxito.", "success");
-            buscarTurnos(); // Refrescar lista
-            
-            // Si la fecha cancelada es la que estamos viendo actualmente en la pestaña de reserva, actualizamos la grilla
-            if (selectedDate === fecha) {
-                cargarHorarios(selectedDate);
-            }
-        } else {
-            showToast(result.message, "error");
+    if (turnos.length < antes) {
+        saveTurnos(turnos);
+        showToast("Turno cancelado con éxito.", "success");
+        buscarTurnos();
+        if (selectedDate === fecha) {
+            cargarHorarios(selectedDate);
         }
-    } catch (error) {
-        showToast("Error al cancelar.", "error");
+    } else {
+        showToast("No se pudo cancelar el turno.", "error");
     }
 }
+
+// ─── Menú desplegable Ayuda ───────────────────────────────────────────────────
 
 /**
  * Abre/cierra el submenú desplegable de Ayuda en el sidebar.
@@ -394,22 +408,18 @@ function toggleAyudaMenu(e) {
 }
 
 /**
- * Navega a la sección de Ayuda y abre el FAQ correspondiente al ítem clickeado.
+ * Navega a la sección de Ayuda y abre el FAQ correspondiente.
  */
 function showFaq(faqId) {
     showSection('ayuda');
 
-    // Cerrar todos los details primero
     document.querySelectorAll('.faq-item').forEach(d => d.removeAttribute('open'));
 
-    // Abrir el seleccionado
     const target = document.getElementById(faqId);
     if (target) {
         target.setAttribute('open', '');
-        // Scroll suave hacia la pregunta
         setTimeout(() => {
             target.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }, 100);
     }
 }
-
